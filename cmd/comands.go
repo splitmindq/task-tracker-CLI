@@ -124,7 +124,7 @@ func parseIDArg(args []string) int {
 	return id
 }
 func StartREPL() {
-	fmt.Println("Task Tracker CLI. Введите команду или 'exit' для выхода.")
+	fmt.Println("Task Tracker CLI. Введите команду(help) или 'exit' для выхода.")
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
