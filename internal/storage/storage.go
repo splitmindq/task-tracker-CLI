@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
 	"task-tracker/internal/entities"
+	"task-tracker/internal/utils"
 )
 
 var (
@@ -102,12 +102,29 @@ func GetAllTasks() {
 		fmt.Println("tasks is empty")
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Description", "Status", "Created", "Updated"})
-	table.SetRowLine(true)
-	table.SetBorder(false)
+	table := utils.SetTableWriterOptions()
 
+	var pinnedTasks []entities.Task
+	var unpinnedTasks []entities.Task
 	for _, task := range tasks {
+		if task.IsPinned {
+			pinnedTasks = append(pinnedTasks, task)
+		} else {
+			unpinnedTasks = append(unpinnedTasks, task)
+		}
+	}
+
+	for _, task := range pinnedTasks {
+		table.Append([]string{
+			fmt.Sprintf("★ %d", task.ID),
+			task.Description,
+			task.Status,
+			task.CreatedAt,
+			task.UpdatedAt,
+		})
+	}
+
+	for _, task := range unpinnedTasks {
 		table.Append([]string{
 			strconv.Itoa(task.ID),
 			task.Description,
@@ -137,10 +154,9 @@ func GetNotDoneTasks() {
 	if tasks == nil {
 		fmt.Println("tasks is empty")
 	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Description", "Status", "Created", "Updated"})
-	table.SetRowLine(true)
-	table.SetBorder(false)
+
+	table := utils.SetTableWriterOptions()
+
 	for _, task := range tasks {
 
 		if task.Status == "todo" {
@@ -162,10 +178,9 @@ func GetInProgressTasks() {
 	if tasks == nil {
 		fmt.Println("tasks is empty")
 	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Description", "Status", "Created", "Updated"})
-	table.SetRowLine(true)
-	table.SetBorder(false)
+
+	table := utils.SetTableWriterOptions()
+
 	for _, task := range tasks {
 
 		if task.Status == "in-progress" {
@@ -187,10 +202,9 @@ func GetDoneTasks() {
 	if tasks == nil {
 		fmt.Println("tasks is empty")
 	}
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Description", "Status", "Created", "Updated"})
-	table.SetRowLine(true)
-	table.SetBorder(false)
+
+	table := utils.SetTableWriterOptions()
+
 	for _, task := range tasks {
 
 		if task.Status == "done" {
@@ -203,5 +217,33 @@ func GetDoneTasks() {
 		}
 
 	}
+
 	table.Render()
+}
+
+func GetPinnedTasks() {
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if tasks == nil {
+		fmt.Println("tasks is empty")
+	}
+
+	table := utils.SetTableWriterOptions()
+
+	for _, task := range tasks {
+		if task.IsPinned {
+			table.Append([]string{
+				fmt.Sprintf("★ %d", task.ID),
+				task.Description,
+				task.Status,
+				task.CreatedAt,
+			})
+
+		}
+	}
+
+	table.Render()
+
 }

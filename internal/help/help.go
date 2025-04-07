@@ -59,6 +59,21 @@ var Commands = []Command{
 		Usage:       "list-done",
 	},
 	{
+		Name:        "pin-task",
+		Description: "Закрепить задачу",
+		Usage:       "pin-task <ID>",
+	},
+	{
+		Name:        "unpin-task",
+		Description: "Открепить задачу",
+		Usage:       "unpin-task <ID>",
+	},
+	{
+		Name:        "list-pinned",
+		Description: "Вывести закрепленные задачи",
+		Usage:       "list-pinned",
+	},
+	{
 		Name:        "help",
 		Description: "Показать эту справку",
 		Usage:       "help [команда]",

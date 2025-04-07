@@ -23,6 +23,9 @@ func Router(command string, args []string) {
 		"list-todo":        runListTodo,
 		"list-in-progress": runListInProgress,
 		"list-done":        runListDone,
+		"pin-task":         runPinTask,
+		"unpin-task":       runUnpinTask,
+		"list-pinned":      runListPinned,
 	}
 
 	if handler, ok := commands[command]; ok {
@@ -102,6 +105,27 @@ func runListInProgress(args []string) {
 
 func runListDone(args []string) {
 	storage.GetDoneTasks()
+}
+
+func runPinTask(args []string) {
+	id := parseIDArg(args)
+	if err := service.PinTask(id); err != nil {
+		fmt.Println("Ошибка: неверный ID")
+		os.Exit(1)
+	}
+
+}
+
+func runUnpinTask(args []string) {
+	id := parseIDArg(args)
+	if err := service.UnpinTask(id); err != nil {
+		fmt.Println("Ошибка: неверный ID")
+		os.Exit(1)
+	}
+}
+
+func runListPinned(args []string) {
+	service.GetPinnedTasks()
 }
 
 // ---------------- Утилиты ----------------

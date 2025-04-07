@@ -6,4 +6,5 @@ type Task struct {
 	Status      string `json:"status"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
+	IsPinned    bool   `json:"is_pinned"`
 }

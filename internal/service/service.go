@@ -12,6 +12,7 @@ func NewTask(description string) (*entities.Task, error) {
 		Status:      "todo",
 		CreatedAt:   time.Now().Format(time.DateTime),
 		UpdatedAt:   time.Now().Format(time.DateTime),
+		IsPinned:    false,
 	}
 
 	if err := storage.AddTask(task); err != nil {
@@ -54,4 +55,26 @@ func UpdateTask(id int, description string) error {
 	task.Description = description
 	task.UpdatedAt = time.Now().Format(time.DateTime)
 	return storage.UpdateTask(&task)
+}
+
+func PinTask(id int) error {
+	task, err := storage.GetTaskByID(id)
+	if err != nil {
+		return err
+	}
+	task.IsPinned = true
+	return storage.UpdateTask(&task)
+}
+
+func UnpinTask(id int) error {
+	task, err := storage.GetTaskByID(id)
+	if err != nil {
+		return err
+	}
+	task.IsPinned = false
+	return storage.UpdateTask(&task)
+}
+
+func GetPinnedTasks() {
+	storage.GetPinnedTasks()
 }
