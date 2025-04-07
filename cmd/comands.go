@@ -33,7 +33,6 @@ func Router(command string, args []string) {
 	} else {
 		fmt.Printf("Неизвестная команда: %s\n", command)
 		help.PrintGeneralHelp()
-		os.Exit(1)
 	}
 }
 
@@ -42,12 +41,14 @@ func runHelp(args []string) {
 }
 
 func runAdd(args []string) {
-	requireArgs(args, 1, "Описание задачи обязательно.\nПример: task-tracker add \"Купить молоко\"")
+	if !requireArgs(args, 1, "Описание задачи обязательно.\nПример: task-tracker add \"Купить молоко\"") {
+		return
+	}
 
 	task, err := service.NewTask(args[0])
 	if err != nil {
 		fmt.Println("Ошибка создания задачи:", err)
-		os.Exit(1)
+		return
 	}
 	fmt.Printf("Задача добавлена (ID: %d)\n", task.ID)
 }
@@ -57,41 +58,52 @@ func runList(args []string) {
 }
 
 func runDelete(args []string) {
-	id := parseIDArg(args)
-	if err := service.DeleteTask(id); err != nil {
+	id, err := parseIDArg(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err = service.DeleteTask(id); err != nil {
 		fmt.Println("Ошибка удаления задачи:", err)
-		os.Exit(1)
 	}
 }
 
 func runMarkDone(args []string) {
-	id := parseIDArg(args)
-	if err := service.MarkTaskAsDone(id); err != nil {
+	id, err := parseIDArg(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err = service.MarkTaskAsDone(id); err != nil {
 		fmt.Println("Ошибка изменения статуса:", err)
-		os.Exit(1)
 	}
 }
 
 func runMarkInProgress(args []string) {
-	id := parseIDArg(args)
-	if err := service.MarkTaskAsInProgress(id); err != nil {
+	id, err := parseIDArg(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err = service.MarkTaskAsInProgress(id); err != nil {
 		fmt.Println("Ошибка изменения статуса:", err)
-		os.Exit(1)
 	}
 }
 
 func runUpdate(args []string) {
-	requireArgs(args, 2, "Требуется ID и новое описание задачи.\nПример: task-tracker update 1 \"Купить хлеб\"")
+	if !requireArgs(args, 2, "Требуется ID и новое описание задачи.\nПример: update 1 \"Купить хлеб\"") {
+		return
+	}
 
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
 		fmt.Println("Ошибка: ID должен быть числом")
-		os.Exit(1)
+		return
 	}
 
 	if err := service.UpdateTask(id, args[1]); err != nil {
 		fmt.Println("Ошибка обновления задачи:", err)
-		os.Exit(1)
 	}
 }
 
@@ -108,19 +120,24 @@ func runListDone(args []string) {
 }
 
 func runPinTask(args []string) {
-	id := parseIDArg(args)
-	if err := service.PinTask(id); err != nil {
-		fmt.Println("Ошибка: неверный ID")
-		os.Exit(1)
+	id, err := parseIDArg(args)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-
+	if err = service.PinTask(id); err != nil {
+		fmt.Println("Ошибка: неверный ID")
+	}
 }
 
 func runUnpinTask(args []string) {
-	id := parseIDArg(args)
-	if err := service.UnpinTask(id); err != nil {
+	id, err := parseIDArg(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if err = service.UnpinTask(id); err != nil {
 		fmt.Println("Ошибка: неверный ID")
-		os.Exit(1)
 	}
 }
 
@@ -130,23 +147,26 @@ func runListPinned(args []string) {
 
 // ---------------- Утилиты ----------------
 
-func requireArgs(args []string, count int, usage string) {
+func requireArgs(args []string, count int, usage string) bool {
 	if len(args) < count {
 		fmt.Println("Ошибка:", usage)
-		os.Exit(1)
+		return false
 	}
+	return true
 }
 
-func parseIDArg(args []string) int {
-	requireArgs(args, 1, "Требуется указать ID задачи.")
+func parseIDArg(args []string) (int, error) {
+	if len(args) < 1 {
+		return 0, fmt.Errorf("требуется указать ID задачи")
+	}
 
 	id, err := strconv.Atoi(args[0])
 	if err != nil {
-		fmt.Println("Ошибка: ID должен быть числом.")
-		os.Exit(1)
+		return 0, fmt.Errorf("ID должен быть числом")
 	}
-	return id
+	return id, nil
 }
+
 func StartREPL() {
 	fmt.Println("Task Tracker CLI. Введите команду(help) или 'exit' для выхода.")
 	scanner := bufio.NewScanner(os.Stdin)
